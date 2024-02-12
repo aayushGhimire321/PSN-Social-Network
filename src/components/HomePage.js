@@ -41,12 +41,12 @@ function HomePage() {
             </Row>
             <Row>
               <h3 className="my-3">
-                <BsFillCpuFill /> ReactJS + Java Spring + MongoDB
+                <BsFillCpuFill /> ReactJS + Java Spring + PostgreSql
               </h3>
             </Row>
             <Row>
               <h3 className="my-3">
-                <BsGithub /> The source code is open
+                <BsGithub /> The source code is open 
               </h3>
             </Row>
             <Row>
