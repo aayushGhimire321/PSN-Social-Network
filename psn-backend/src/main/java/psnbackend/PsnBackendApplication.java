@@ -1,4 +1,4 @@
-package com.linhtch90.psnbackend;
+package psnbackend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
