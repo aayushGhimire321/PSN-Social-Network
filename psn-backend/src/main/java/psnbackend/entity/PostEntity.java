@@ -8,17 +8,18 @@ import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "post") // Define the table name for PostgreSQL
+@Table(name = "post")
 public class PostEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Assuming you want an auto-incremented ID for PostgreSQL
+    private Long id;
 
     @Column(name = "user_id")
     private String userId;
@@ -45,7 +46,10 @@ public class PostEntity {
     @Column(name = "share")
     private List<String> share = new ArrayList<>();
 
+    // Setter for comments
+    @Setter
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private List<CommentEntity> comments = new ArrayList<>();
+
 }
