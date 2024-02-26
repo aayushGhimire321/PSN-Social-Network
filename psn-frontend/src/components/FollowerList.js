@@ -17,7 +17,7 @@ function FollowerList() {
     }
     
     dispatch(getFollowerAccounts());
-  }, []);
+  }, [dispatch, navigate]);
 
   return (
     <div>

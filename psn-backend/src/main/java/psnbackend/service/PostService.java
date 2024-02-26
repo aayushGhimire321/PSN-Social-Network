@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 import psnbackend.entity.DoubleIdObjectEntity;
-import psnbackend.entity.IdObjectEntity;
 import psnbackend.entity.PostByFollowing;
 import psnbackend.entity.PostEntity;
 import psnbackend.entity.UserEntity;
@@ -21,9 +20,10 @@ import org.springframework.stereotype.Service;
 public class PostService {
     @Autowired
     private PostRepository postRepo;
+
     @Autowired
     private UserRepository userRepo;
-    
+
     public ResponseObjectService insertPost(PostEntity inputPost) {
         ResponseObjectService responseObj = new ResponseObjectService();
         inputPost.setCreatedAt(Instant.now());
@@ -33,56 +33,40 @@ public class PostService {
         return responseObj;
     }
 
-    public ResponseObjectService findPostByUserId(IdObjectEntity inputUserId) {
+    public ResponseObjectService findPostByUserId(String inputUserId) {
         ResponseObjectService responseObj = new ResponseObjectService();
-        Optional<List<PostEntity>> userPostsOpt = postRepo.findByUserIdOrderByCreatedAtDesc(inputUserId.getId());
-        if (userPostsOpt.isEmpty()) {
+        List<PostEntity> userPosts = postRepo.findByUserIdOrderByCreatedAtDesc(inputUserId);
+        if (userPosts.isEmpty()) {
             responseObj.setStatus("fail");
-            responseObj.setMessage("cannot find any post from user id: " + inputUserId.getId());
+            responseObj.setMessage("cannot find any post from user id: " + inputUserId);
             responseObj.setPayload(null);
             return responseObj;
         } else {
-            List<PostEntity> userPosts = userPostsOpt.get();
             responseObj.setStatus("success");
             responseObj.setMessage("success");
             responseObj.setPayload(userPosts);
             return responseObj;
         }
     }
-    
-    public ResponseObjectService findPostByFollowing(IdObjectEntity inputUserId) {
+
+    public ResponseObjectService findPostByFollowing(String inputUserId) {
         ResponseObjectService responseObj = new ResponseObjectService();
-        Optional<UserEntity> optUser = userRepo.findById(Long.valueOf(inputUserId.getId()));
+        Optional<UserEntity> optUser = userRepo.findById(Long.valueOf(inputUserId));
         if (optUser.isEmpty()) {
             responseObj.setStatus("fail");
-            responseObj.setMessage("cannot find any post from user id: " + inputUserId.getId());
+            responseObj.setMessage("cannot find any post from user id: " + inputUserId);
             responseObj.setPayload(null);
             return responseObj;
         } else {
             UserEntity user = optUser.get();
             if (user.getFollowing() != null) {
-                // if user followed someone, get their ids
-                List<String> followingIds = new ArrayList<>();
-                for (String id : user.getFollowing()) {
-                    followingIds.add(id);
-                }
-                // based on these ids, get their equivalent posts
+                List<String> followingIds = user.getFollowing();
                 List<PostByFollowing> listPosts = new ArrayList<>();
                 for (String followingId : followingIds) {
-                    // get following user info based on Id
-                    UserEntity followingUser = new UserEntity();
-                    Optional<UserEntity> optFollowingUser = userRepo.findById(Long.valueOf(followingId));
-                    if (optFollowingUser.isPresent()) {
-                        followingUser = optFollowingUser.get();
-                    }
-
-                    followingUser.setPassword("");
-                    
-                    // get equivalent posts
-                    Optional<List<PostEntity>> followingPostsOpt = postRepo.findByUserId(followingId);
-                    if (followingPostsOpt.isPresent()) {
-                        // if followed account has any post, collect them
-                        List<PostEntity> followingPosts = followingPostsOpt.get();
+                    UserEntity followingUser = userRepo.findById(Long.valueOf(followingId)).orElse(null);
+                    if (followingUser != null) {
+                        followingUser.setPassword("");
+                        List<PostEntity> followingPosts = postRepo.findByUserId(followingId);
                         if (followingPosts != null) {
                             for (PostEntity item : followingPosts) {
                                 listPosts.add(new PostByFollowing(followingUser, item));
@@ -97,7 +81,7 @@ public class PostService {
                 return responseObj;
             } else {
                 responseObj.setStatus("fail");
-                responseObj.setMessage("user id: " + inputUserId.getId() + " has empty following list");
+                responseObj.setMessage("user id: " + inputUserId + " has empty following list");
                 responseObj.setPayload(null);
                 return responseObj;
             }
@@ -113,7 +97,6 @@ public class PostService {
             responseObj.setPayload(null);
             return responseObj;
         } else {
-            // inputPost.setCreatedAt(Instant.now());
             postRepo.save(inputPost);
             responseObj.setStatus("success");
             responseObj.setMessage("post is updated successfully");
@@ -123,7 +106,6 @@ public class PostService {
     }
 
     public ResponseObjectService updatePostByLove(DoubleIdObjectEntity doubleId) {
-        // id 1 - post Id, id 2 - user who liked post
         ResponseObjectService responseObj = new ResponseObjectService();
         Optional<PostEntity> optPost = postRepo.findById(Long.valueOf(doubleId.getId1()));
         if (optPost.isEmpty()) {
@@ -137,7 +119,6 @@ public class PostService {
             if (loveList == null) {
                 loveList = new ArrayList<>();
             }
-            // love and unlove a post
             if (!loveList.contains(doubleId.getId2())) {
                 loveList.add(doubleId.getId2());
             } else {
@@ -153,7 +134,6 @@ public class PostService {
     }
 
     public ResponseObjectService updatePostByShare(DoubleIdObjectEntity doubleId) {
-        // id 1 - post Id, id 2 - user who shared post
         ResponseObjectService responseObj = new ResponseObjectService();
         Optional<PostEntity> optPost = postRepo.findById(Long.valueOf(doubleId.getId1()));
         if (optPost.isEmpty()) {
@@ -167,11 +147,10 @@ public class PostService {
             if (shareList == null) {
                 shareList = new ArrayList<>();
             }
-            // save id of user who shared the post then update post
             shareList.add(doubleId.getId2());
             targetPost.setShare(shareList);
             postRepo.save(targetPost);
-            // update post list of user who shared the post
+
             targetPost.setUserId(doubleId.getId2());
             targetPost.setId(null);
             targetPost.setContent("Shared a post: " + targetPost.getContent());

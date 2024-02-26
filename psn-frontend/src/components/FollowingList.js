@@ -17,7 +17,7 @@ function FollowingList() {
     }
     
     dispatch(getFollowingAccounts());
-  }, []);
+  }, [dispatch, navigate]);
 
   return (
     <div>

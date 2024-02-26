@@ -45,7 +45,7 @@ function FollowerAccountItem(props) {
         }
       }
     }
-  }, []);
+  }, [props.id, storeFollowingAccounts]);
 
   return (
     <div className="d-flex align-items-center my-5">

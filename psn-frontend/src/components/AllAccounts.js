@@ -16,7 +16,7 @@ function AllAccounts() {
       navigate("/unauthorized");
     }
     dispatch(getAllAccounts());
-  }, []);
+  }, [dispatch, navigate]);
 
   return (
     <div>

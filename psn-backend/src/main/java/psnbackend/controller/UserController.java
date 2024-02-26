@@ -99,4 +99,5 @@ public class UserController {
     public ResponseEntity<String> testAfterLogin(Principal p) {
         return ResponseEntity.ok("Welcome. You are: " + p.getName());
     }
+
 }
